@@ -1,7 +1,7 @@
 import Options from './Options';
 
 function Question({ question, dispatch, answerIndex }) {
-  console.log(question);
+  // console.log(question);
   return (
     <div className="questions">
       <h4>{question.question}</h4>

@@ -18,7 +18,7 @@ function FinishScreen({ points, maxPossiblePoints, highscore, dispatch }) {
       <p className="highscore">(Highscore: {highscore} points)</p>
       <button
         className="btn btn-ui"
-        onClick={() => dispatch({ type: 'reset' })}
+        onClick={() => dispatch({ type: 'restart' })}
       >
         Restart Quiz
       </button>

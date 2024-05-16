@@ -1,10 +1,10 @@
-function Options({ question, dispatch, answer }) {
-  const hasAnswered = answer !== null;
+function Options({ question, dispatch, answerIndex }) {
+  const hasAnswered = answerIndex !== null;
   return (
     <div className="options">
       {question.options.map((option, index) => (
         <button
-          className={`btn btn-option ${index === answer ? 'answer' : ''} ${
+          className={`btn btn-option ${index === answerIndex ? 'answer' : ''} ${
             hasAnswered &&
             (index === question.correctOption ? 'correct' : 'wrong')
           }`}

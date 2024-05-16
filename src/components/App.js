@@ -5,15 +5,20 @@ import Loader from './Loader';
 import Error from './Error';
 import StartScreen from './StartScreen';
 import Question from './Question';
+import NextButton from './NextButton';
+import Progress from './Progress';
+import FinishScreen from './FinishScreen';
 
 const initialState = {
   questions: [],
 
   // 'loading', 'error', ready', 'active', 'finished'
   status: 'loading',
-  index: 0,
-  answer: null,
+
+  questionIndex: 0,
+  answerIndex: null,
   points: 0,
+  highscore: 0,
 };
 
 function reducer(state, action) {
@@ -29,14 +34,35 @@ function reducer(state, action) {
     case 'start':
       return { ...state, status: 'active' };
     case 'newAnswer':
-      const question = state.questions.at(state.index);
+      const question = state.questions.at(state.questionIndex);
       return {
         ...state,
-        answer: action.payload,
+        answerIndex: action.payload,
         points:
           action.payload === question.correctOption
             ? state.points + question.points
             : state.points,
+      };
+    case 'nextQuestion':
+      return {
+        ...state,
+        questionIndex: state.questionIndex + 1,
+        answerIndex: null,
+      };
+    case 'finish':
+      return {
+        ...state,
+        status: 'finished',
+        highscore:
+          state.points > state.highscore ? state.points : state.highscore,
+      };
+    case 'reset':
+      return {
+        ...state,
+        status: 'ready',
+        questionIndex: 0,
+        answerIndex: null,
+        points: 0,
       };
     default:
       throw new Error('Unknown action');
@@ -44,12 +70,19 @@ function reducer(state, action) {
 }
 
 export default function App() {
-  const [{ questions, status, index, answer }, dispatch] = useReducer(
-    reducer,
-    initialState
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  // Destructuring
+  const { questions, status, questionIndex, answerIndex, points, highscore } =
+    state;
+
+  // Derived States
+  const numQuestions = questions.length;
+  const maxPossiblePoints = questions.reduce(
+    (prev, cur) => prev + cur.points,
+    0
   );
 
-  const numQuestions = questions.length;
   useEffect(function () {
     fetch('http://localhost:9000/questions')
       .then((res) => res.json())
@@ -67,10 +100,33 @@ export default function App() {
           <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
         )}
         {status === 'active' && (
-          <Question
-            question={questions[index]}
+          <>
+            <Progress
+              numQuestions={numQuestions}
+              questionIndex={questionIndex}
+              points={points}
+              maxPossiblePoints={maxPossiblePoints}
+              answerIndex={answerIndex}
+            />
+            <Question
+              question={questions[questionIndex]}
+              dispatch={dispatch}
+              answerIndex={answerIndex}
+            />
+            <NextButton
+              dispatch={dispatch}
+              answerIndex={answerIndex}
+              numQuestions={numQuestions}
+              questionIndex={questionIndex}
+            />
+          </>
+        )}
+        {status === 'finished' && (
+          <FinishScreen
+            points={points}
+            maxPossiblePoints={maxPossiblePoints}
+            highscore={highscore}
             dispatch={dispatch}
-            answer={answer}
           />
         )}
       </Main>
